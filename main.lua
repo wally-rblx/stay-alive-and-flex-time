@@ -1,7 +1,7 @@
 
 local client = game:GetService('Players').LocalPlayer;
 if (PROTOSMASHER_LOADED) then
-    return client:Kick('\nThis script crashes on ProtoSmasher, sorry!')
+    return client:Kick('\nThis script crashes on ProtoSmasher, sorry! Kicked to prevent bans / issues.')
 end
 
 local scriptContext = game:GetService('ScriptContext')
