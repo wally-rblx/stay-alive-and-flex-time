@@ -170,7 +170,7 @@ local function initLogic(character)
                     humanoid:EquipTool(sword)
                 else -- sorry it aint in da world bro
                     sword = findCurrentTool() -- ok we find new tool
-                    handle = sword:WaitForChild('Handle') -- plz work
+                    handle = (sword and sword:WaitForChild('Handle')) -- plz work
                 end
             end
 
