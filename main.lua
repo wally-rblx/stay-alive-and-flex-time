@@ -14,7 +14,7 @@ local chatEvents = replicatedStorage:WaitForChild('DefaultChatSystemChatEvents',
 local sendMessage = (chatEvents and chatEvents:WaitForChild('SayMessageRequest', 10))
 
 local spawnLocation = workspace:WaitForChild('Structure'):WaitForChild('SpawnLocation')
-local SPAWN_DISTANCE = 29
+local SPAWN_DISTANCE = 31
 
 if (not killEvent) then
     return client:Kick('\nFailed to find "StudEvent".')
@@ -152,12 +152,7 @@ local function initLogic(character)
                 local position = (pRoot.CFrame * CFrame.new(0, 0, 5).p)
                 local newCframe = CFrame.new(position, pRoot.Position)
 
-                local distance = math.floor((root.Position - pRoot.Position).magnitude)
-                if distance >= 15 then
-                    root.CFrame = root.CFrame:lerp(newCframe, 0.05)
-                else
-                    root.CFrame = newCframe
-                end
+                root.CFrame = newCframe
             end
         end
     end))
@@ -190,7 +185,9 @@ local function initLogic(character)
                 local distance = (client:DistanceFromCharacter(pRoot.Position))
                 local isNearSpawn = math.floor((spawnLocation.Position - pRoot.Position).magnitude) <= SPAWN_DISTANCE
 
-                if distance <= 20 and (not isNearSpawn) then
+                if (isNearSpawn) then continue end
+
+                if distance <= 15 then
                     if (not target) then target = pCharacter end
 
                     firetouchinterest(handle, pRoot, 0) 
