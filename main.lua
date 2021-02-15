@@ -53,6 +53,25 @@ local library = safeLoadstring('UI', 'https://raw.githubusercontent.com/wally-rb
 
 local mainMaid = maid.new()
 
+local messages = {
+    'ez', 
+    'L', 
+    'owned', 
+    "you're bad", 
+    "1'd",
+    "You just got owned by a person using a swag script",
+    "I'm a god tier player, why are you saying I'm hacking?",
+    "Get destroyed by {c}",
+    "Why are you so bad at the game?",
+    "Ez, ez, ez, ez, ez, ez, ez, ez!",
+    "{v} get good",
+    "{v} you have no skillz",
+    "ur dog water kid",
+    "git good bud",
+    "imagine not having a good gaming chair!",
+}
+
+local randomObj = Random.new()
 local function initLogic(character)
     mainMaid:DoCleaning()
 
@@ -91,7 +110,7 @@ local function initLogic(character)
         return
     end
 
-    -- not sure how efficient it is to make 3 seperate threads, 
+    -- not sure how efficient it is to make seperate threads, 
     -- but i dont want to run all of the logic in the same thread
     -- for the sole reason of making everything able to run on its own 
 
@@ -125,32 +144,13 @@ local function initLogic(character)
         end
     end))
 
-    local messages = {
-        'ez', 
-        'L', 
-        'owned', 
-        "you're bad", 
-        "1'd",
-        "You just got owned by a person using a swag script",
-        "I'm a god tier player, why are you saying I'm hacking?",
-        "Get destroyed by {c}",
-        "Why are you so bad at the game?",
-        "Ez, ez, ez, ez, ez, ez, ez, ez!",
-        "{v} get good",
-        "{v} you have no skillz",
-        "ur dog water kid",
-        "git good bud",
-        "imagine not having a good gaming chair!",
-    }
-
-    local R = Random.new()
     
     -- i know I could put this outside of the loop, but i guess it looks better with all of the other signals
     mainMaid:GiveTask(killEvent.OnClientEvent:connect(function(victim, killer)
         if typeof(victim) == 'Instance' and typeof(killer) == 'Instance' then
             if victim:IsA('Player') and killer:IsA('Player') and killer == client then
                 if library.flags.killSay then
-                    local msg = messages[R:NextInteger(1, #messages)]
+                    local msg = messages[randomObj:NextInteger(1, #messages)]
                     msg = msg:gsub("{c}", client.Name);
                     msg = msg:gsub("{v}", victim.Name);
                     game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, 'All')
