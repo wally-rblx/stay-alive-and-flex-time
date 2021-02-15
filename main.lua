@@ -73,7 +73,8 @@ local messages = {
     "git good bud",
     "imagine not having a good gaming chair!",
     "swaghook winning!",
-    "samuel on top!"
+    "samuel on top!",
+    "jack is dumb"
 }
 
 local randomObj = Random.new()
