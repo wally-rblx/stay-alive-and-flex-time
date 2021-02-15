@@ -14,7 +14,7 @@ local chatEvents = replicatedStorage:WaitForChild('DefaultChatSystemChatEvents',
 local sendMessage = (chatEvents and chatEvents:WaitForChild('SayMessageRequest', 10))
 
 local spawnLocation = workspace:WaitForChild('Structure'):WaitForChild('SpawnLocation')
-local SPAWN_DISTANCE = 26
+local SPAWN_DISTANCE = 29
 
 if (not killEvent) then
     return client:Kick('\nFailed to find "StudEvent".')
@@ -154,7 +154,7 @@ local function initLogic(character)
 
                 local distance = math.floor((root.Position - pRoot.Position).magnitude)
                 if distance >= 15 then
-                    root.CFrame = root.CFrame:lerp(newCframe, 0.075)
+                    root.CFrame = root.CFrame:lerp(newCframe, 0.05)
                 else
                     root.CFrame = newCframe
                 end
