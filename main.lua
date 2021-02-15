@@ -13,6 +13,9 @@ local killEvent = (events and events:WaitForChild('StudEvent', 10))
 local chatEvents = replicatedStorage:WaitForChild('DefaultChatSystemChatEvents', 10)
 local sendMessage = (chatEvents and chatEvents:WaitForChild('SayMessageRequest', 10))
 
+local spawnLocation = workspace:WaitForChild('Structure'):WaitForChild('SpawnLocation')
+local SPAWN_DISTANCE = 26
+
 if (not killEvent) then
     return client:Kick('\nFailed to find "StudEvent".')
 elseif (not sendMessage) then
@@ -74,6 +77,8 @@ local messages = {
 }
 
 local randomObj = Random.new()
+local target = nil;
+
 local function initLogic(character)
     mainMaid:DoCleaning()
 
@@ -97,15 +102,15 @@ local function initLogic(character)
                 signal:Disable()
             end
         end
+    end 
+
+    local function findCurrentTool()
+        local tool = character:FindFirstChildWhichIsA('Tool')
+        if tool then return tool end
+        return client.Backpack:FindFirstChildWhichIsA('Tool')
     end
 
-    local sword = character:FindFirstChildWhichIsA('Tool')
-    if (not sword) then
-        local tool = client.Backpack:FindFirstChildWhichIsA('Tool')
-        if tool then
-            sword = tool;
-        end
-    end 
+    local sword = findCurrentTool()
 
     local handle = (sword and sword:FindFirstChild('Handle'))
     if (not sword) or (not handle) then
@@ -115,12 +120,61 @@ local function initLogic(character)
     -- not sure how efficient it is to make seperate threads, 
     -- but i dont want to run all of the logic in the same thread
     -- for the sole reason of making everything able to run on its own 
+    
+    mainMaid:GiveTask(runService.Heartbeat:connect(function()
+        if library.flags.attachToTarget then
+            if target then
+                local pRoot = target:FindFirstChild('HumanoidRootPart')
+                local pHumanoid = target:FindFirstChildWhichIsA('Humanoid')
+                local player = game:GetService('Players'):GetPlayerFromCharacter(target)
+            
+                if (not player) then -- that ape left smh
+                    target = nil;
+                    return
+                end
+
+                if (not pHumanoid) or (pHumanoid.Health <= 0) then
+                    target = nil;
+                    return
+                end
+
+                if (not pRoot) then
+                    target = nil;
+                    return
+                end
+
+                local isNearSpawn = math.floor((spawnLocation.Position - pRoot.Position).magnitude) <= SPAWN_DISTANCE
+                if (isNearSpawn) then
+                    target = nil;
+                    return
+                end
+
+                local position = (pRoot.CFrame * CFrame.new(0, 0, 5).p)
+                local newCframe = CFrame.new(position, pRoot.Position)
+
+                local distance = math.floor((root.Position - pRoot.Position).magnitude)
+                if distance >= 15 then
+                    root.CFrame = root.CFrame:lerp(newCframe, 0.075)
+                else
+                    root.CFrame = newCframe
+                end
+            end
+        end
+    end))
 
     mainMaid:GiveTask(runService.Heartbeat:connect(function()
         if (library.flags.autoAttack) then
-            if (not sword:IsDescendantOf(character)) then
-                humanoid:EquipTool(sword)
+            -- ugly hack
+            if (not sword:IsDescendantOf(character)) then -- if not equipped
+                if sword:IsDescendantOf(game) then -- is it still in the game (e.g. if you unequipped it)
+                    humanoid:EquipTool(sword)
+                else -- sorry it aint in da world bro
+                    sword = findCurrentTool() -- ok we find new tool
+                    handle = sword:WaitForChild('Handle') -- plz work
+                end
             end
+
+            if (not sword) then return end -- idk how there wouldnt be a tool but ok gg
 
             sword:Activate()
             for i, player in next, game:GetService('Players'):GetPlayers() do
@@ -128,11 +182,17 @@ local function initLogic(character)
 
                 local pCharacter = player.Character;
                 local pRoot = (pCharacter and pCharacter:FindFirstChild('HumanoidRootPart'))
+                local pHuman = (pCharacter and pCharacter:FindFirstChildWhichIsA('Humanoid'))
 
                 if (not pRoot) then continue end
+                if (not pHuman) or (pHuman.Health < 0) then continue end
 
                 local distance = (client:DistanceFromCharacter(pRoot.Position))
-                if distance <= 15 then
+                local isNearSpawn = math.floor((spawnLocation.Position - pRoot.Position).magnitude) <= SPAWN_DISTANCE
+
+                if distance <= 20 and (not isNearSpawn) then
+                    if (not target) then target = pCharacter end
+
                     firetouchinterest(handle, pRoot, 0) 
                     firetouchinterest(handle, pRoot, 1)
                 end
@@ -146,6 +206,9 @@ local function initLogic(character)
         end
     end))
 
+    mainMaid:GiveTask(function()
+        target = nil; -- remove target after next maid cleanup
+    end)
     
     -- i know I could put this outside of the loop, but i guess it looks better with all of the other signals
     mainMaid:GiveTask(killEvent.OnClientEvent:connect(function(victim, killer)
@@ -172,7 +235,12 @@ local window = library:CreateWindow('SA&FYT') do
     local folder = window:AddFolder('Main') do
         folder:AddToggle({text = 'Auto attack', flag = 'autoAttack'})
         folder:AddToggle({text = 'Kill say', flag = 'killSay'})
-
+        folder:AddToggle({text = 'Attach to back', flag = 'attachToTarget', callback = function(value)
+            if (not value) then
+                target = nil;
+            end
+        end})
+        
         folder:AddToggle({text = 'Speed boost', flag = 'speedHack'})
         folder:AddSlider({text = 'Speed factor', flag = 'speedFactor', min = 0.1, max = 0.2, float = 0.01})
         folder:AddBind({text = 'Speed bind', flag = 'speedBind', hold = true, callback = function(value)
