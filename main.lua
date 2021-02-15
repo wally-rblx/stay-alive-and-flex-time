@@ -172,7 +172,7 @@ local window = library:CreateWindow('SA&FYT') do
         folder:AddToggle({text = 'Kill say', flag = 'killSay'})
 
         folder:AddToggle({text = 'Speed boost', flag = 'speedHack'})
-        folder:AddSlider({text = 'Speed factor', flag = 'speedFactor', min = 0.1, max = 0.25, float = 0.01})
+        folder:AddSlider({text = 'Speed factor', flag = 'speedFactor', min = 0.1, max = 0.2, float = 0.01})
         folder:AddBind({text = 'Speed bind', flag = 'speedBind', hold = true, callback = function(value)
             library._speedHackHeld = (not value)
         end})
