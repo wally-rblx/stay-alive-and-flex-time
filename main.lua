@@ -1,14 +1,37 @@
+
 local client = game:GetService('Players').LocalPlayer;
+if (PROTOSMASHER_LOADED) then
+    return client:Kick('\nThis script crashes on ProtoSmasher, sorry!')
+end
+
+local scriptContext = game:GetService('ScriptContext')
 local userInputService = game:GetService('UserInputService');
 local runService = game:GetService('RunService');
-
 local replicatedStorage = game:GetService('ReplicatedStorage')
+
 local events = replicatedStorage:WaitForChild('Remotes', 10)
 local killEvent = (events and events:WaitForChild('StudEvent', 10))
+local chatEvents = replicatedStorage:WaitForChild('DefaultChatSystemChatEvents', 10)
+local sendMessage = (chatEvents and chatEvents:WaitForChild('SayMessageRequest', 10))
 
 if (not killEvent) then
     return client:Kick('\nFailed to find "StudEvent".')
+elseif (not sendMessage) then
+    return client:Kick('\nFailed to find "SayMessageRequest".')
 end
+
+if (not firetouchinterest) then
+    return client:Kick('\nExploit requires "firetouchinterest".')
+elseif (not getconnections) then
+    return client:Kick('\nExploit requires "getconnections".')
+end
+
+pcall(function()
+    -- better hope this works
+    for i, v in next, getconnections(scriptContext.Error) do
+        v:Disable()
+    end
+end)
 
 local function safeLoadstring(name, url)
     local success, content = pcall(game.HttpGet, game, url)
@@ -16,6 +39,7 @@ local function safeLoadstring(name, url)
         client:Kick(string.format('Failed to load library (%s). HttpError: %s', name, content))
         return function() wait(9e9) end
     end
+
     local func, err = loadstring(content)
     if (not func) then
         client:Kick(string.format('Failed to load library (%s). SyntaxError: %s', name, err))
@@ -26,7 +50,7 @@ local function safeLoadstring(name, url)
 end
 
 local maid = safeLoadstring('Maid', 'https://raw.githubusercontent.com/Quenty/NevermoreEngine/a8a2d2c1ffcf6288ec8d66f65cea593061ba2cf0/Modules/Shared/Events/Maid.lua')()
-local library = safeLoadstring('UI', 'https://pastebin.com/raw/edJT9EGX')()
+local library = safeLoadstring('UI', 'https://raw.githubusercontent.com/wally-rblx/uwuware-ui/main/main.lua')()
 
 local mainMaid = maid.new()
 
@@ -77,8 +101,8 @@ local function initLogic(character)
             if (not sword:IsDescendantOf(character)) then
                 humanoid:EquipTool(sword)
             end
-            sword:Activate()
 
+            sword:Activate()
             for i, player in next, game:GetService('Players'):GetPlayers() do
                 if player == client then continue end
 
@@ -98,7 +122,7 @@ local function initLogic(character)
 
     mainMaid:GiveTask(runService.Heartbeat:connect(function()
         if library.flags.speedHack and library._speedHackHeld then
-            root.CFrame = root.CFrame + root.CFrame.lookVector * (library.flags.speedFactor or 0.15)
+            root.CFrame = root.CFrame + (root.CFrame.lookVector * (library.flags.speedFactor or 0.15))
         end
     end))
 
